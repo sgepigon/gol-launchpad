@@ -34,10 +34,10 @@
   "A helper functions for `neighbors`. Return all the neighbor coordinates for
   `coords`."
   [[row col :as coords]]
-  (->> (for [i (range -1 2), j (range -1 2)]
-         [(mod (+ row i) num-rows)
-          (mod (+ col j) num-cols)])
-       (remove #{coords})))
+  (for [i (range -1 2), j (range -1 2)
+        :when (not= [i j] [0 0])]
+    [(mod (+ row i) num-rows)
+     (mod (+ col j) num-cols)]))
 
 (s/fdef neighbors
   :args (s/cat :board ::board, :coords ::coords)
