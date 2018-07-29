@@ -1,4 +1,5 @@
 (ns gol-launchpad.core
+  (:refer-clojure :exclude [next])
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as sgen]
             [clojure.spec.test.alpha :as stest]
@@ -87,6 +88,14 @@
     ::overpopulation dead
     ::reproduction live
     dead))
+
+(s/fdef next
+  :args (s/cat :board ::board)
+  :ret ::board)
+(defn next
+  "Return the next board."
+  [board]
+  (reduce #(assoc-in %1 %2 (transition board %2)) board coordinates))
 
 ;; midi
 
