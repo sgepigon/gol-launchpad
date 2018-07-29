@@ -9,13 +9,15 @@
 (def num-rows 8)
 (def num-cols 8)
 (def colors {:green 120})
+(def live :O)
+(def dead :_)
+(def live? #{live})
+(def dead? #{dead})
 
 (s/def ::coords (s/spec (s/cat :row (s/int-in 0 num-rows), :col (s/int-in 0 num-cols))))
-(s/def ::cell (s/or :live #{:live}, :dead #{:dead}))
+(s/def ::cell (s/or :live live?, :dead dead?))
 (s/def ::row (s/coll-of ::cell, :kind vector?, :count num-cols))
 (s/def ::board (s/coll-of ::row, :kind vector?, :count num-rows))
-
-(def live? #{:live})
 
 (s/fdef cell
   :args (s/cat :board ::board, :coords ::coords)
@@ -89,23 +91,25 @@
 
 (comment
 
-  (def off [[:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]
-            [:dead :dead :dead :dead :dead :dead :dead :dead]])
+  (def off
+    [[:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]])
 
-  (def glider [[:dead :live :dead :dead :dead :dead :dead :dead]
-               [:dead :dead :live :dead :dead :dead :dead :dead]
-               [:live :live :live :dead :dead :dead :dead :dead]
-               [:dead :dead :dead :dead :dead :dead :dead :dead]
-               [:dead :dead :dead :dead :dead :dead :dead :dead]
-               [:dead :dead :dead :dead :dead :dead :dead :dead]
-               [:dead :dead :dead :dead :dead :dead :dead :dead]
-               [:dead :dead :dead :dead :dead :dead :dead :dead]])
+  (def glider
+    [[:_ :O :_ :_ :_ :_ :_ :_]
+     [:_ :_ :O :_ :_ :_ :_ :_]
+     [:O :O :O :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]
+     [:_ :_ :_ :_ :_ :_ :_ :_]])
 
   (def coords-board (into [] (for [x (range num-rows)]
                                (into [] (for [y (range num-cols)] [x y])))))
