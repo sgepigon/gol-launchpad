@@ -2,27 +2,46 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as sgen]
             [clojure.spec.test.alpha :as stest]
-            [overtone.live :as overtone :refer :all]))
-
-(def glider [[:dead :live :dead :dead :dead :dead :dead :dead]
-             [:dead :dead :live :dead :dead :dead :dead :dead]
-             [:live :live :live :dead :dead :dead :dead :dead]
-             [:dead :dead :dead :dead :dead :dead :dead :dead]
-             [:dead :dead :dead :dead :dead :dead :dead :dead]
-             [:dead :dead :dead :dead :dead :dead :dead :dead]
-             [:dead :dead :dead :dead :dead :dead :dead :dead]
-             [:dead :dead :dead :dead :dead :dead :dead :dead]])
+            [overtone.live :as overtone :refer :all]
+            [expound.alpha :as expound]))
 
 ;; 8 x 8
-(def n 8)
-(def m 8)
+(def num-rows 8)
+(def num-cols 8)
+(def colors {:green 120})
 
-(s/def ::coords (s/cat :x (s/int-in 0 n) :y (s/int-in 0 m)))
+(s/def ::coords (s/spec (s/cat :row (s/int-in 0 num-rows), :col (s/int-in 0 num-cols))))
 (s/def ::cell (s/or :live #{:live}, :dead #{:dead}))
-(s/def ::row (s/coll-of ::cell, :kind vector?, :count n))
-(s/def ::board (s/coll-of ::row, :kind vector?, :count m))
+(s/def ::row (s/coll-of ::cell, :kind vector?, :count num-cols))
+(s/def ::board (s/coll-of ::row, :kind vector?, :count num-rows))
 
 (def live? #{:live})
+
+(s/fdef cell
+  :args (s/cat :board ::board, :coords ::coords)
+  :ret ::cell)
+
+(defn- cell
+  "Return the cell at `coords` on `board`."
+  [board [row col :as coords]]
+  (get-in board coords))
+
+(defn- neighbors-
+  "A helper functions for `neighbors`. Return all the neighbor coordinates for
+  `coords`."
+  [[row col :as coords]]
+  (->> (for [i (range -1 2), j (range -1 2)]
+         [(mod (+ row i) num-rows)
+          (mod (+ col j) num-cols)])
+       (remove #{coords})))
+
+(defn neighbors
+  "Return the number of live neighbors of a cell."
+  [board [row col :as coords]]
+  (->> (neighbors- coords)
+       (map #(cell board %))
+       (filter live?)
+       count))
 
 ;; midi
 
@@ -30,107 +49,74 @@
 
 (s/fdef ->midi-note
   :args (s/cat :coords ::coords)
-  :ret pos-int?)
+  :ret nat-int?)
 
-(defn ->midi-note
-  ""
-  [x y]
-  (+ (* 16 y) x))
+(defn- ->midi-note
+  "Translate `coords` to its place on the Launchpad."
+  [[row col :as coords]]
+  (+ (* 16 row) col))
 
-(defn toggle-on [x y]
-  (midi-note-on lp (->midi-note x y) 120))
+(defn- toggle-on
+  [[row col :as coords]]
+  (midi-note-on lp (->midi-note coords) (:green colors)))
 
-(defn toggle-off [x y]
-  (midi-note-off lp (->midi-note x y)))
+(defn- toggle-off
+  [[row col :as coords]]
+  (midi-note-off lp (->midi-note coords)))
 
-(defn neighbors- [x y]
-  (->> (for [i (range -1 2)
-             j (range -1 2)]
-         [(mod (+ x i) n)
-          (mod (+ y j) m)])
-       (remove #{[x y]})))
+(defn- print-cell
+  [board [row col :as coords]]
+  (if (live? (cell board coords))
+    (toggle-on coords)
+    (toggle-off coords)))
 
-(defn cell [board [x y]]
-  (get-in board [y x]))
+(defn- print-board
+  "Print `board` on the Launchpad."
+  [board]
+  (for [i (range num-rows), j (range num-cols)]
+    (print-cell board [i j])))
 
-(defn neighbors
-  ""
-  [board x y]
-  (->> (neighbors- x y)
-       (map #(cell board %))
-       (filter live?)
-       count))
-
-#_(neighbors board 0 0)
-
-(defn main-loop [m]
+(defn main-loop
+  "TODO"
+  [m]
   (let [beat (m)]
     (do (println beat)
         (apply-by (m (inc beat)) #'main-loop [m]))))
 
-(defn print-cell [board x y]
-  (if (live? (cell board [x y]))
-    (toggle-on x y)
-    (toggle-off x y)))
-
-(defn print-board [board]
-
-  (for [i (range n) j (range m)]
-    (print-cell board i j)))
-
-#_(print-board (sgen/generate (s/gen ::board)))
-
-(def off [[:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]
-          [:dead :dead :dead :dead :dead :dead :dead :dead]])
-
-(print-board off)
-
-#_(neighbors 0 0)
-
 (comment
 
-  (map #(apply toggle-off %) (neighbors 0 0))
-  (map #(apply toggle-on %) (neighbors 0 0))
+  (def off [[:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]
+            [:dead :dead :dead :dead :dead :dead :dead :dead]])
 
- (main-loop (metronome 120))
+  (def glider [[:dead :live :dead :dead :dead :dead :dead :dead]
+               [:dead :dead :live :dead :dead :dead :dead :dead]
+               [:live :live :live :dead :dead :dead :dead :dead]
+               [:dead :dead :dead :dead :dead :dead :dead :dead]
+               [:dead :dead :dead :dead :dead :dead :dead :dead]
+               [:dead :dead :dead :dead :dead :dead :dead :dead]
+               [:dead :dead :dead :dead :dead :dead :dead :dead]
+               [:dead :dead :dead :dead :dead :dead :dead :dead]])
 
-  (s/exercise ::board 1)
+  (def coords-board (into [] (for [x (range num-rows)]
+                               (into [] (for [y (range num-cols)] [x y])))))
 
-  (defn rand-seed [] (rand-nth [0 1]))
+  (map #(apply toggle-on %) (neighbors- [0 0]))
+  (map #(apply toggle-off %) (neighbors- [0 0]))
 
-  (let [receiver ]
-                                        ;Play a midi note c4 at 80 velocity for 1 millisecond on the fourth channel
-                                        ;Note that the channel is zero-indexed, whereas normal mixers/midi devices start counting them from 1.
-    (overtone.midi/midi-note receiver (note :c4) 80 1 3)
+  (print-board (sgen/generate (s/gen ::board)))
 
-                                        ;Turn on the sustain pedal to full on the first channel
-                                        ;64 is the midi control number for the sustain (damper) pedal.
-    (midi-note-on lp (->midi-note 7 7) 120 )
+  (neighbors board [0 0])
+  (print-board off)
 
-    (midi-note-off lp (->midi-note 7 7))
+  (set! s/*explain-out* (expound/custom-printer {:show-valid-values? true
+                                                 :print-specs? false
+                                                 :theme :figwheel-theme}))
 
-    (let [{:keys [bpm else start] :as nome} (metronome 120)]
-
-      {:bpm bpm
-       :else else
-       :start start}
-
-      (defn ->frequency
-        ""
-        []
-
-        )
-
-
-      )
-
-
-)
 
   )
