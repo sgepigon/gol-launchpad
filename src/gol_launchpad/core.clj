@@ -68,23 +68,24 @@
 (s/def ::reproduction (s/and #(dead? (apply cell %))
                              #(= (apply neighbors %) 3)))
 
-(s/fdef rules
+(s/fdef transition
   :args (s/cat :board ::board, :coords ::coords)
   :ret ::cell)
-(defn rules
-  "Update a cell on `board` according to the Game of Life rules:
+(defn transition
+  "Return a cell on `board` according to the Game of Life rules:
 
   1. Any live cell with fewer than two live neighbors dies
   2. Any live cell with two or three live neighbors survives
   3. Any live cell with more than three live neighbors dies
   4. Any dead cell with exactly three live neighbors becomes a live cell."
   [board [row col :as coords]]
-  (cond
-    (s/valid? ::underpopulation [board coords]) dead
-    (s/valid? ::survive [board coords]) live
-    (s/valid? ::overpopulation [board coords]) dead
-    (s/valid? ::reproduction [board coords]) live
-    :else (cell board coords)))
+  (condp s/valid? [board coords]
+    ::underpopulation dead
+    ::survive live
+    ::overpopulation dead
+    ::reproduction live
+    dead))
+
 ;; midi
 
 (def lp (first (midi-connected-receivers)))
