@@ -20,12 +20,14 @@
 (s/fdef cell
   :args (s/cat :board ::board, :coords ::coords)
   :ret ::cell)
-
 (defn- cell
   "Return the cell at `coords` on `board`."
   [board [row col :as coords]]
   (get-in board coords))
 
+(s/fdef neighbors-
+  :args (s/cat :coords ::coords)
+  :ret (s/coll-of ::coords))
 (defn- neighbors-
   "A helper functions for `neighbors`. Return all the neighbor coordinates for
   `coords`."
@@ -35,6 +37,9 @@
           (mod (+ col j) num-cols)])
        (remove #{coords})))
 
+(s/fdef neighbors
+  :args (s/cat :board ::board, :coords ::coords)
+  :ret nat-int?)
 (defn neighbors
   "Return the number of live neighbors of a cell."
   [board [row col :as coords]]
@@ -50,7 +55,6 @@
 (s/fdef ->midi-note
   :args (s/cat :coords ::coords)
   :ret nat-int?)
-
 (defn- ->midi-note
   "Translate `coords` to its place on the Launchpad."
   [[row col :as coords]]
