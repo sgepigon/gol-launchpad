@@ -9,6 +9,8 @@
 (def num-rows 8)
 (def num-cols 8)
 (def colors {:green 120})
+(def coordinates (for [row (range num-rows), col (range num-cols)] [row col]))
+
 (def live :O)
 (def dead :_)
 (def live? #{live})
@@ -147,8 +149,6 @@
      [:_ :_ :_ :_ :_ :_ :_ :_]
      [:_ :_ :_ :_ :_ :_ :_ :_]])
 
-  (def coords-board (into [] (for [x (range num-rows)]
-                               (into [] (for [y (range num-cols)] [x y])))))
 
   (map #(apply toggle-on %) (neighbors- [0 0]))
   (map #(apply toggle-off %) (neighbors- [0 0]))
