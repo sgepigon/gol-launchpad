@@ -3,8 +3,9 @@
   (:require [clojure.spec.alpha :as s]
             [clojure.spec.gen.alpha :as sgen]
             [clojure.spec.test.alpha :as stest]
-            [overtone.live :as overtone :refer :all]
-            [expound.alpha :as expound]))
+            [expound.alpha :as expound]
+            [gol-launchpad.patterns :as patterns]
+            [overtone.live :as overtone :refer :all]))
 
 ;; 8 x 8
 (def num-rows 8)
@@ -137,27 +138,6 @@
         (apply-by (m (inc beat)) #'main-loop [m]))))
 
 (comment
-
-  (def off
-    [[:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]])
-
-  (def glider
-    [[:_ :O :_ :_ :_ :_ :_ :_]
-     [:_ :_ :O :_ :_ :_ :_ :_]
-     [:O :O :O :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]
-     [:_ :_ :_ :_ :_ :_ :_ :_]])
-
 
   (map #(apply toggle-on %) (neighbors- [0 0]))
   (map #(apply toggle-off %) (neighbors- [0 0]))
