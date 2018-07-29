@@ -29,7 +29,7 @@
   [[row col :as coords]]
   (midi-note-off lp (->midi-note coords)))
 
-(defn- print-cell
+(defn- toggle-cell
   [board [row col :as coords]]
   (if (life/live? (life/cell board coords))
     (toggle-on coords)
@@ -38,8 +38,7 @@
 (defn- print-board
   "Print `board` on the Launchpad."
   [board]
-  (for [i (range life/num-rows), j (range life/num-cols)]
-    (print-cell board [i j])))
+  (doseq [coords life/coordinates] (toggle-cell board coords)))
 
 (defn main-loop
   "TODO"
