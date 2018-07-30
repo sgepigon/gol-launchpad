@@ -33,7 +33,7 @@
   `coords`."
   [[row col :as coords]]
   (for [i (range -1 2), j (range -1 2)
-        :when (not= [i j] [0 0])]
+        :when (not= i j 0)]
     [(mod (+ row i) num-rows)
      (mod (+ col j) num-cols)]))
 
