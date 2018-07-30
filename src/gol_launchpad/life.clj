@@ -27,7 +27,7 @@
 
 (s/fdef neighbors-
   :args (s/cat :coords ::coords)
-  :ret (s/coll-of ::coords))
+  :ret (s/coll-of ::coords :count 8))
 (defn- neighbors-
   "A helper functions for `neighbors`. Return all the neighbor coordinates for
   `coords`."
