@@ -35,3 +35,8 @@
   (if (life/live? (life/cell board coords))
     (toggle-on coords)
     (toggle-off coords)))
+
+(defn print-board
+  "Print `board` on the Launchpad."
+  [board]
+  (doseq [coords life/coordinates] (toggle-cell board coords)))

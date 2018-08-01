@@ -91,3 +91,9 @@
   "Return the next board."
   [board]
   (reduce #(assoc-in %1 %2 (transition board %2)) board coordinates))
+
+(defn toggle-cell
+  [board coords]
+  (update-in board coords #(if (live? %)
+                             dead
+                             live)))
