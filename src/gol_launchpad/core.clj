@@ -5,56 +5,17 @@
             [expound.alpha :as expound]
             [gol-launchpad.life :as life]
             [gol-launchpad.patterns :as patterns]
+            [gol-launchpad.lp :as lp]
             [overtone.live :as overtone :refer :all]))
-
-(event-debug-on)
-(on-event [:midi :note-on]
-          (fn [{:keys [note]}]
-            (do (print note)
-                (swap! #(toggle-cell % (midi-note->coords note)) board)))
-          ::lp-handler)
 
 (def board (atom patterns/barren))
 
-(def colors {:green 120})
-
 ;; midi
-
-(def lp (first (midi-connected-receivers)))
-
-(s/fdef coords->midi-note
-  :args (s/cat :coords ::life/coords)
-  :ret nat-int?)
-(defn- coords->midi-note
-  "Translate `coords` to its place on the Launchpad."
-  [[row col :as coords]]
-  (+ (* 16 row) col))
-
-(s/fdef midi-note->coords
-  :args (s/cat :midi-note nat-int?)
-  :ret ::life/coords)
-(defn- midi-note->coords
-  [midi-note]
-  (apply (juxt quot rem) [midi-note 16]))
-
-(defn- toggle-on
-  [[row col :as coords]]
-  (midi-note-on lp (coords->midi-note coords) (:green colors)))
-
-(defn- toggle-off
-  [[row col :as coords]]
-  (midi-note-off lp (coords->midi-note coords)))
-
-(defn- toggle-cell
-  [board [row col :as coords]]
-  (if (life/live? (life/cell board coords))
-    (toggle-on coords)
-    (toggle-off coords)))
 
 (defn- print-board
   "Print `board` on the Launchpad."
   [board]
-  (doseq [coords life/coordinates] (toggle-cell board coords)))
+  (doseq [coords life/coordinates] (lp/toggle-cell board coords)))
 
 (defn main-loop
   "TODO"
@@ -64,15 +25,27 @@
         (swap! board life/next)
         (apply-by (m (inc beat)) #'main-loop [m]))))
 
+(defn toggle-cell
+  [board coords]
+  (update-in board coords #(if (life/live? %)
+                             life/dead
+                             life/live)))
 
-
+(on-event [:midi :note-on]
+          (fn [{:keys [note]}]
+            (swap! board #(toggle-cell % (lp/midi-note->coords note))))
+          ::lp-handler)
 
 (comment
+
+  (event-debug-on)
+
+  (remove-event-handler ::lp-handler)
 
 
   (reset! board [])
 
-  (main-loop (metronome 120))
+  (main-loop (metronome 200))
   (stop)
 
   @board
