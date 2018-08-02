@@ -23,19 +23,34 @@
   [midi-note]
   (apply (juxt quot rem) [midi-note 16]))
 
-(defn toggle-on
-  [[row col :as coords]]
-  (midi/midi-note-on lp (coords->midi-note coords) (:orange colors)))
+(defn paint
+  [coords color]
+  (midi/midi-note-on lp (coords->midi-note coords) (color colors)))
 
-(defn toggle-off
-  [[row col :as coords]]
+(defn erase
+  [coords]
   (midi/midi-note-off lp (coords->midi-note coords)))
+
+(defn paint-born
+  [[row col :as coords]]
+  (paint coords :green))
+
+(defn paint-alive
+  [[row col :as coords]]
+  (paint coords :orange))
+
+(defn paint-dead
+  [[row col :as coords]]
+  (erase coords))
 
 (defn toggle-cell
   [board [row col :as coords]]
-  (if (life/live? (life/cell board coords))
-    (toggle-on coords)
-    (toggle-off coords)))
+  (let [cell (life/cell board coords)]
+    (cond
+      (life/born? cell) (paint-born coords)
+      (life/live? cell) (paint-alive coords)
+      (life/dead? cell) (paint-dead coords)
+      :else (paint-dead coords))))
 
 (defn print-board
   "Print `board` on the Launchpad."
