@@ -7,9 +7,11 @@
 (def num-cols 8)
 (def coordinates (for [row (range num-rows), col (range num-cols)] [row col]))
 
-(def live :O)
-(def dead :_)
-(def live? #{live})
+(def born :👶)
+(def alive :💁)
+(def dead :💀)
+(def born? #{born})
+(def live? #{born alive})
 (def dead? #{dead})
 
 (s/def ::coords (s/spec (s/cat :row (s/int-in 0 num-rows), :col (s/int-in 0 num-cols))))
@@ -79,9 +81,9 @@
   [board [row col :as coords]]
   (condp s/valid? [board coords]
     ::underpopulation dead
-    ::survive live
+    ::survive alive
     ::overpopulation dead
-    ::reproduction live
+    ::reproduction born
     dead))
 
 (s/fdef next
@@ -96,4 +98,4 @@
   [board coords]
   (update-in board coords #(if (live? %)
                              dead
-                             live)))
+                             born)))
