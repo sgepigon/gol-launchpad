@@ -3,7 +3,8 @@
             [overtone.studio.midi :as midi]
             [gol-launchpad.life :as life]))
 
-(def colors {:green 120})
+(def colors {:green 120
+             :orange 127})
 
 (def ^:private lp (first (midi/midi-connected-receivers)))
 
@@ -24,7 +25,7 @@
 
 (defn toggle-on
   [[row col :as coords]]
-  (midi/midi-note-on lp (coords->midi-note coords) (:green colors)))
+  (midi/midi-note-on lp (coords->midi-note coords) (:orange colors)))
 
 (defn toggle-off
   [[row col :as coords]]
