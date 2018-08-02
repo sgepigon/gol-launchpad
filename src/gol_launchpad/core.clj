@@ -11,8 +11,6 @@
 
 (def board (atom patterns/barren))
 
-;; midi
-
 (defn main-loop
   "TODO"
   [m]
@@ -29,14 +27,14 @@
 
 (comment
 
-  (remove-event-handler ::lp-handler)
+  (def m (metronome 200))
 
-  (main-loop (metronome 200))
+  (main-loop m)
+
   (stop)
-
-  @board
 
   (set! s/*explain-out* (expound/custom-printer {:show-valid-values? true
                                                  :print-specs? false
-                                                 :theme :figwheel-theme})))
+                                                 :theme :figwheel-theme}))
 
+  (remove-event-handler ::lp-handler))
