@@ -4,11 +4,11 @@
 
 (defn- p4
   [x]
-  (float (* x (/ 4 3))))
+  (float (* x 4/3)))
 
 (defn- p5
   [x]
-  (float (* x (/ 3 2))))
+  (float (* x 3/2)))
 
 (defn- make-row
   [tonic]
@@ -28,9 +28,9 @@
 
 (defsynth s [freq 440]
   (let [tonic (sin-osc freq)
-        h1 (* (/ 1 2) (sin-osc (* freq 2)))
-        h2 (* (/ 1 4) (sin-osc (* freq 4)))
-        h3 (* (/ 1 8) (sin-osc (* freq (/ 8 3))))
+        h1 (* 1/2 (sin-osc (* freq 2)))
+        h2 (* 1/4 (sin-osc (* freq 4)))
+        h3 (* 1/8 (sin-osc (* freq 8/3)))
         syn (+ tonic h1 h2 h3)
         sig (lpf (* 0.3
                     (* (env-gen (perc) :action FREE) syn))
