@@ -4,6 +4,8 @@
             [overtone.live :refer :all]))
 
 (s/def ::fn-interval (s/fspec :args (s/cat :x number?) :ret number?))
+(s/def ::rows pos-int?)
+(s/def ::cols pos-int?)
 
 (defn- p4
   [x]
@@ -24,10 +26,10 @@
   [root fn-row fn-col & {:keys [rows cols] :or {rows 8 cols 8}}]
   (letfn [(->interval [f n x] (vec (take n (iterate f x))))]
     (->> root
-         (->interval fn-col cols)
-         (mapv (partial ->interval fn-row rows)))))
+         (->interval fn-row rows)
+         (mapv (partial ->interval fn-col cols)))))
 
-(def ^:private lookup-table (->table 50 p5 p4))
+(def ^:private lookup-table (->table 50 p4 p5))
 
 (defsynth s [freq 440]
   (let [tonic (sin-osc freq)
