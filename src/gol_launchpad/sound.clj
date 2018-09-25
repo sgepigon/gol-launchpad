@@ -42,12 +42,15 @@
                  1600)]
     (out 0 [sig (delay-c sig 0.01 0.01)])))
 
-;; (defsynth s [freq 440]
-;;           (let [factor 2
-;;                 mul 20
-;;                 env (perc)
-;;                 sig (* 0.3 (* (env-gen env :action FREE) (sin-osc (+ freq (* mul (sin-osc (* freq factor)))))))]
-;;             (out 0 [sig (delay-c sig 0.01 0.01)])))
+(comment
+
+  (defsynth s [freq 440]
+    (let [factor 2
+          mul 20
+          env (perc)
+          sig (* 0.3 (* (env-gen env :action FREE) (sin-osc (+ freq (* mul (sin-osc (* freq factor)))))))]
+      (out 0 [sig (delay-c sig 0.01 0.01)])))
+  )
 
 (defn play
   [board coords]
