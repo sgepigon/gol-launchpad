@@ -1,6 +1,11 @@
 (ns gol-launchpad.sound
-  (:require [overtone.live :refer :all]
-            [gol-launchpad.life :as life]))
+  (:require [clojure.spec.alpha :as s]
+            [gol-launchpad.life :as life]
+            [overtone.live :refer :all]))
+
+(s/def ::fn-interval (s/fspec :args (s/cat :x number?) :ret number?))
+(s/def ::rows pos-int?)
+(s/def ::cols pos-int?)
 
 (defn- p4
   [x]
@@ -10,21 +15,21 @@
   [x]
   (float (* x 3/2)))
 
-(defn- make-row
-  [tonic]
-  (take 8 (iterate p5 tonic)))
+(s/fdef ->table
+  :args (s/cat :root number?
+               :fn-row ::fn-interval :fn-col ::fn-interval
+               :dimensions (s/keys* :opt-un [::rows ::cols]))
+  :ret (s/coll-of (s/coll-of number? :kind vector?) :kind vector?))
+(defn- ->table
+  "Returns a table with intervals that satisfy `fn-row` across and `fn-col`down,
+  starting at `root`, with dimension `rows` by `cols` (default 8x8)."
+  [root fn-row fn-col & {:keys [rows cols] :or {rows 8 cols 8}}]
+  (letfn [(->interval [f n x] (vec (take n (iterate f x))))]
+    (->> root
+         (->interval fn-row rows)
+         (mapv (partial ->interval fn-col cols)))))
 
-(def ^:private lookup-table
-  (let [root 50]
-    (vector
-      (vec (make-row root))
-      (vec (make-row (p4 root)))
-      (vec (make-row (p4 (p4 root))))
-      (vec (make-row (p4 (p4 (p4 root)))))
-      (vec (make-row (p4 (p4 (p4 (p4 root))))))
-      (vec (make-row (p4 (p4 (p4 (p4 (p4 root)))))))
-      (vec (make-row (p4 (p4 (p4 (p4 (p4 (p4 root))))))))
-      (vec (make-row (p4 (p4 (p4 (p4 (p4 (p4 (p4 root))))))))))))
+(def ^:private lookup-table (->table 50 p4 p5))
 
 (defsynth s [freq 440]
   (let [tonic (sin-osc freq)
