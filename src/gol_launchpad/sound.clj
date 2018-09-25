@@ -18,7 +18,7 @@
                :fn-row ::fn-interval :fn-col ::fn-interval
                :dimensions (s/keys* :opt-un [::rows ::cols]))
   :ret (s/coll-of (s/coll-of number? :kind vector?) :kind vector?))
-(defn ->table
+(defn- ->table
   "Returns a table with intervals that satisfy `fn-row` across and `fn-col`down,
   starting at `root`, with dimension `rows` by `cols` (default 8x8)."
   [root fn-row fn-col & {:keys [rows cols] :or {rows 8 cols 8}}]
